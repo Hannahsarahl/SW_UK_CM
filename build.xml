@@ -1,28 +1,66 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<project>
+<project name="FibonacciUI" basedir="." default="main">
 
+    <property name="src.dir"     value="src"/>
+	<property name="test.dir"	value="${src.dir}/test"/>
+	
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir"     value="${build.dir}/jar"/>
+	<property name="lib.dir"	 value="lib"/>
+    <property name="main-class"  value="${src.dir}/FibonacciUI"/>
+
+	<path id="classpath">
+	<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+	
+	<path id ="application" location="${jar.dir}/${FibonacciUI}.jar"/>
+	
     <target name="clean">
-        <delete dir="build"/>
+        <delete dir="${build.dir}"/>
     </target>
 
     <target name="compile">
-        <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes"/>
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
     </target>
 
-    <target name="jar">
-        <mkdir dir="build/jar"/>
-        <jar destfile="build/jar/FibonacciUI.jar" basedir="build/classes">
+    <target name="jar" depends = "compile">
+        <mkdir dir="${jar.dir}"/>
+		<jar destfile="${jar.dir}/${FibonacciUI}.jar" basedir="${classes.dir}">
             <manifest>
-                <attribute name="main" value="src.FibonacciUI"/>
+                <attribute name="main" value="${FibonacciUI}"/>
             </manifest>
         </jar>
     </target>
 
-    <target name="run">
-        <java jar="build/jar/FibonacciUI.jar" fork="true"/>
+	
+	<target name="run" depends="jar">
+        <java fork="true" classname="FibonacciUI">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="application"/>
+            </classpath>
+        </java>
     </target>
+	
+		<target name="junit" depends="jar">
+		<junit printsummary="yes">
+			<classpath>
+				<path refid="classpath"/>
+				<path refid="application"/>
+			</classpath>	
+			<batchtest fork = "yes">
+				<fileset dir="${test.dir}" includes="**/*TestFibonacci*.java"/>
+			</batchtest>
+		</junit>
+	</target>
+	
+	
+	<target name="clean-build" depends="clean,jar"/>
+
+    <target name="main" depends="clean,run"/>
 
 </project>
 
